@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { FileUpload } from '@/components/FileUpload';
 import { TemplateSelector } from '@/components/TemplateSelector';
 import { ProductForm } from '@/components/ProductForm';
 import { EncarteCanvas } from '@/components/EncarteCanvas';
 import { Product, EncarteData, TemplateType } from '@/types/product';
-import { ArrowDown, ArrowRight, FileUp, PenTool, Download } from 'lucide-react';
+import { ArrowDown, ArrowRight, FileUp, PenTool, Download, Layout } from 'lucide-react';
 
 const Index = () => {
   const [products, setProducts] = useState<Product[]>([]);
