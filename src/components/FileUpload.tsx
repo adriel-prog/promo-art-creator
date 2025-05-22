@@ -74,7 +74,7 @@ export const FileUpload = ({ onProductsLoaded }: FileUploadProps) => {
 
   if (isUploaded) {
     return (
-      <Card className="p-6 bg-blue-50 border-blue-200 animate-scale-in">
+      <Card className="p-5 bg-white border-blue-100 shadow-sm animate-scale-in">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <CheckCircle className="w-6 h-6 text-blue-600" />
@@ -83,7 +83,7 @@ export const FileUpload = ({ onProductsLoaded }: FileUploadProps) => {
               <p className="text-sm text-blue-600">{fileName}</p>
             </div>
           </div>
-          <Button variant="outline" onClick={resetUpload} size="sm" className="text-blue-600 border-blue-300 hover:bg-blue-100">
+          <Button variant="outline" onClick={resetUpload} size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50">
             Alterar arquivo
           </Button>
         </div>
@@ -93,13 +93,13 @@ export const FileUpload = ({ onProductsLoaded }: FileUploadProps) => {
 
   return (
     <div className="space-y-4">
-      <Card className="hover-scale animate-fade-in">
+      <Card className="transition-all animate-fade-in border-0 shadow-sm">
         <div
           {...getRootProps()}
           className={`p-8 border-2 border-dashed rounded-lg transition-all cursor-pointer ${
             isDragActive 
               ? 'border-blue-500 bg-blue-50' 
-              : 'border-gray-300 hover:border-blue-500 hover:bg-blue-50/50'
+              : 'border-gray-200 hover:border-blue-400 hover:bg-blue-50/50'
           }`}
         >
           <input {...getInputProps()} />
@@ -111,7 +111,7 @@ export const FileUpload = ({ onProductsLoaded }: FileUploadProps) => {
                 <FileSpreadsheet className="w-12 h-12 text-blue-400" />
               )}
             </div>
-            <h3 className="text-lg font-semibold mb-2">
+            <h3 className="text-lg font-semibold mb-2 text-gray-800">
               {isDragActive ? 'Solte o arquivo aqui' : 'Faça upload da planilha'}
             </h3>
             <p className="text-gray-600 mb-4">
@@ -132,7 +132,7 @@ export const FileUpload = ({ onProductsLoaded }: FileUploadProps) => {
       <div className="flex gap-2 justify-center">
         <Button 
           variant="outline" 
-          className="flex items-center gap-2 border-blue-300 text-blue-700 hover:bg-blue-50"
+          className="flex items-center gap-2 border-blue-200 text-blue-700 hover:bg-blue-50 transition-all"
           onClick={handleTemplateDownload}
         >
           <Download size={16} />
@@ -140,7 +140,7 @@ export const FileUpload = ({ onProductsLoaded }: FileUploadProps) => {
         </Button>
         <Button 
           variant="outline" 
-          className="flex items-center gap-2 border-blue-300 text-blue-700 hover:bg-blue-50"
+          className="flex items-center gap-2 border-blue-200 text-blue-700 hover:bg-blue-50 transition-all"
           onClick={loadExamples}
         >
           Carregar exemplos
