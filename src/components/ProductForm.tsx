@@ -78,16 +78,16 @@ export const ProductForm = ({ products, selectedTemplate, onEncarteGenerate }: P
   }
 
   return (
-    <Card className="p-6 animate-fade-in">
-      <h3 className="text-xl font-semibold mb-6 bg-gradient-blue bg-clip-text text-transparent">
+    <Card className="p-6 animate-fade-in border border-blue-200 shadow-md">
+      <h3 className="text-xl font-semibold mb-6 text-blue-700">
         Dados do Encarte
       </h3>
       
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="product">Produto</Label>
+          <Label htmlFor="product" className="text-blue-700">Produto</Label>
           <Select value={selectedProductCode} onValueChange={setSelectedProductCode}>
-            <SelectTrigger>
+            <SelectTrigger className="border-blue-200 focus:ring-blue-500">
               <SelectValue placeholder="Selecione um produto" />
             </SelectTrigger>
             <SelectContent>
@@ -101,16 +101,16 @@ export const ProductForm = ({ products, selectedTemplate, onEncarteGenerate }: P
         </div>
 
         {selectedProduct && (
-          <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-            <p className="text-sm font-medium">Produto selecionado:</p>
-            <p className="text-sm text-gray-600">{selectedProduct.nome}</p>
+          <div className="bg-blue-50 rounded-lg p-4 space-y-2 border border-blue-100">
+            <p className="text-sm font-medium text-blue-700">Produto selecionado:</p>
+            <p className="text-sm text-blue-600">{selectedProduct.nome}</p>
             <div className="flex items-center gap-2">
               <img 
                 src={selectedProduct.urlImagem} 
                 alt={selectedProduct.nome}
-                className="w-16 h-16 object-cover rounded"
+                className="w-16 h-16 object-cover rounded border border-blue-200"
                 onError={(e) => {
-                  e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCA2NCA2NCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIGZpbGw9IiNmM2Y0ZjYiIHJ4PSI4Ii8+PHBhdGggZD0iTTMyIDI4YzIuMjA5IDAgNC0xLjc5MSA0LTRzLTEuNzkxLTQtNC00LTQgMS43OTEtNCA0IDEuNzkxIDQgNCA0em0xMiAySDIwdjEyaDE2VjM2aDh2LTZIMzJ2LTJ6bS0yNCAwaDJ2Mkg0OHYtMkgyMHoiIGZpbGw9IiM5Y2EzYWYiLz48L3N2Zz4=';
+                  e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCA2NCA2NCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIGZpbGw9IiNlYmYyZmEiIHJ4PSI4Ii8+PHBhdGggZD0iTTMyIDI4YzIuMjA5IDAgNC0xLjc5MSA0LTRzLTEuNzkxLTQtNC00LTQgMS43OTEtNCA0IDEuNzkxIDQgNCA0em0xMiAySDIwdjEyaDE2VjM2aDh2LTZIMzJ2LTJ6bS0yNCAwaDJ2Mkg0OHYtMkgyMHoiIGZpbGw9IiM0Mjg4ZDkiLz48L3N2Zz4=';
                 }}
               />
               <p className="text-xs text-blue-600 break-all">{selectedProduct.urlImagem}</p>
@@ -120,31 +120,33 @@ export const ProductForm = ({ products, selectedTemplate, onEncarteGenerate }: P
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="precoOriginal">Preço Original (R$)</Label>
+            <Label htmlFor="precoOriginal" className="text-blue-700">Preço Original (R$)</Label>
             <Input
               id="precoOriginal"
               type="text"
               placeholder="14,90"
               value={precoOriginal}
               onChange={(e) => setPrecoOriginal(e.target.value)}
+              className="border-blue-200 focus:ring-blue-500"
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="precoPromocional">Preço Promocional (R$)</Label>
+            <Label htmlFor="precoPromocional" className="text-blue-700">Preço Promocional (R$)</Label>
             <Input
               id="precoPromocional"
               type="text"
               placeholder="9,99"
               value={precoPromocional}
               onChange={(e) => setPrecoPromocional(e.target.value)}
+              className="border-blue-200 focus:ring-blue-500"
             />
           </div>
         </div>
 
         {calcularDesconto() > 0 && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-            <p className="text-sm font-medium text-green-800">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-sm font-medium text-blue-800">
               💰 Desconto de {calcularDesconto()}%
             </p>
           </div>
@@ -152,7 +154,7 @@ export const ProductForm = ({ products, selectedTemplate, onEncarteGenerate }: P
 
         <Button 
           type="submit" 
-          className="w-full bg-gradient-promo hover:opacity-90 text-white font-semibold py-3"
+          className="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:opacity-90 text-white font-semibold py-3"
           disabled={!selectedProduct || !precoOriginal || !precoPromocional}
         >
           Gerar Encarte

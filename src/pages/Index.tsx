@@ -26,18 +26,18 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="bg-gradient-to-r from-blue-700 to-blue-900 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="text-center">
-            <h1 className="text-4xl font-bold bg-gradient-promo bg-clip-text text-transparent mb-2">
+            <h1 className="text-4xl font-bold text-white mb-2 drop-shadow-md">
               Discar Distribuidora
             </h1>
-            <p className="text-xl text-gray-600 mb-1">
+            <p className="text-xl text-blue-100 mb-1">
               Gerador de Encartes Promocionais
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-blue-200">
               Parceira oficial Ambev - Crie encartes profissionais em segundos
             </p>
           </div>
@@ -52,10 +52,10 @@ const Index = () => {
             {/* Step 1: Upload */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gradient-promo rounded-full flex items-center justify-center text-white font-bold text-sm">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
                   1
                 </div>
-                <h2 className="text-xl font-semibold">Upload da Planilha</h2>
+                <h2 className="text-xl font-semibold text-blue-800">Upload da Planilha</h2>
               </div>
               <FileUpload onProductsLoaded={handleProductsLoaded} />
             </div>
@@ -64,10 +64,10 @@ const Index = () => {
             {products.length > 0 && (
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-gradient-blue rounded-full flex items-center justify-center text-white font-bold text-sm">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
                     2
                   </div>
-                  <h2 className="text-xl font-semibold">Escolha do Modelo</h2>
+                  <h2 className="text-xl font-semibold text-blue-800">Escolha do Modelo</h2>
                 </div>
                 <TemplateSelector 
                   selectedTemplate={selectedTemplate} 
@@ -80,10 +80,10 @@ const Index = () => {
             {products.length > 0 && selectedTemplate && (
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-gradient-success rounded-full flex items-center justify-center text-white font-bold text-sm">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
                     3
                   </div>
-                  <h2 className="text-xl font-semibold">Dados do Produto</h2>
+                  <h2 className="text-xl font-semibold text-blue-800">Dados do Produto</h2>
                 </div>
                 <ProductForm 
                   products={products}
@@ -97,45 +97,45 @@ const Index = () => {
           {/* Right Column - Canvas Preview */}
           <div className="lg:sticky lg:top-8 lg:h-fit">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center text-white font-bold text-sm">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
                 4
               </div>
-              <h2 className="text-xl font-semibold">Prévia do Encarte</h2>
+              <h2 className="text-xl font-semibold text-blue-800">Prévia do Encarte</h2>
             </div>
             <EncarteCanvas encarteData={currentEncarte} />
           </div>
         </div>
 
         {/* Instructions */}
-        <div className="mt-12 bg-white rounded-lg p-6 shadow-sm">
-          <h3 className="text-lg font-semibold mb-4">Como usar:</h3>
+        <div className="mt-12 bg-white rounded-lg p-6 shadow-md border border-blue-200">
+          <h3 className="text-lg font-semibold mb-4 text-blue-800">Como usar:</h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
             <div className="text-center">
-              <div className="w-12 h-12 bg-gradient-promo rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-2">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-2 shadow-md">
                 1
               </div>
-              <p className="font-medium mb-1">Upload da Planilha</p>
+              <p className="font-medium mb-1 text-blue-700">Upload da Planilha</p>
               <p className="text-gray-600">Carregue um arquivo CSV com códigos, nomes e URLs das imagens dos produtos</p>
             </div>
             <div className="text-center">
-              <div className="w-12 h-12 bg-gradient-blue rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-2">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-2 shadow-md">
                 2
               </div>
-              <p className="font-medium mb-1">Escolha o Modelo</p>
+              <p className="font-medium mb-1 text-blue-700">Escolha o Modelo</p>
               <p className="text-gray-600">Selecione entre os modelos disponíveis: Moderno, Clássico ou Minimalista</p>
             </div>
             <div className="text-center">
-              <div className="w-12 h-12 bg-gradient-success rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-2">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-700 to-blue-800 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-2 shadow-md">
                 3
               </div>
-              <p className="font-medium mb-1">Dados do Produto</p>
+              <p className="font-medium mb-1 text-blue-700">Dados do Produto</p>
               <p className="text-gray-600">Selecione o produto e insira os preços original e promocional</p>
             </div>
             <div className="text-center">
-              <div className="w-12 h-12 bg-gray-500 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-2">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-800 to-blue-900 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-2 shadow-md">
                 4
               </div>
-              <p className="font-medium mb-1">Download</p>
+              <p className="font-medium mb-1 text-blue-700">Download</p>
               <p className="text-gray-600">Baixe seu encarte em PNG ou JPG e compartilhe nas redes sociais</p>
             </div>
           </div>
@@ -143,9 +143,9 @@ const Index = () => {
       </div>
 
       {/* Footer */}
-      <footer className="bg-white border-t mt-16">
+      <footer className="bg-gradient-to-r from-blue-800 to-blue-900 mt-16 shadow-inner">
         <div className="max-w-7xl mx-auto px-4 py-8 text-center">
-          <p className="text-gray-600">
+          <p className="text-blue-100">
             © 2024 Discar Distribuidora - Parceira oficial Ambev | Gerador de Encartes Promocionais
           </p>
         </div>

@@ -5,22 +5,22 @@ export const templates: Template[] = [
   {
     id: 'moderno',
     name: 'Moderno',
-    description: 'Design clean e contemporâneo com gradientes vibrantes',
-    preview: 'bg-gradient-promo',
+    description: 'Design clean e contemporâneo com gradientes azuis',
+    preview: 'bg-gradient-blue',
     colors: {
-      primary: '#FF6B35',
-      secondary: '#E63946',
+      primary: '#1E40AF',
+      secondary: '#3B82F6',
       accent: '#FFFFFF'
     }
   },
   {
     id: 'classico',
     name: 'Clássico',
-    description: 'Estilo tradicional com cores sólidas e elegantes',
+    description: 'Estilo tradicional com tons de azul elegantes',
     preview: 'bg-gradient-blue',
     colors: {
-      primary: '#457B9D',
-      secondary: '#8E44AD',
+      primary: '#1E3A8A',
+      secondary: '#2563EB',
       accent: '#FFFFFF'
     }
   },
@@ -28,10 +28,10 @@ export const templates: Template[] = [
     id: 'minimalista',
     name: 'Minimalista',
     description: 'Design limpo e minimalista com foco no produto',
-    preview: 'bg-gradient-success',
+    preview: 'bg-gradient-blue',
     colors: {
-      primary: '#27AE60',
-      secondary: '#F39C12',
+      primary: '#0369A1',
+      secondary: '#0EA5E9',
       accent: '#FFFFFF'
     }
   }

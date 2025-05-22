@@ -97,3 +97,17 @@
     @apply backdrop-blur-sm bg-white/80 border border-white/20;
   }
 }
+
+@layer components {
+  .bg-gradient-blue {
+    @apply bg-gradient-to-r from-blue-600 to-blue-800;
+  }
+  
+  .bg-gradient-blue-light {
+    @apply bg-gradient-to-r from-blue-400 to-blue-600;
+  }
+  
+  .bg-gradient-discar {
+    @apply bg-gradient-to-r from-blue-700 to-blue-900;
+  }
+}
