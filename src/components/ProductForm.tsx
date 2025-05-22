@@ -4,9 +4,17 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Product, EncarteData, TemplateType } from '@/types/product';
 import { toast } from 'sonner';
+import { CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 
 interface ProductFormProps {
   products: Product[];
@@ -18,6 +26,9 @@ export const ProductForm = ({ products, selectedTemplate, onEncarteGenerate }: P
   const [selectedProductCode, setSelectedProductCode] = useState('');
   const [precoOriginal, setPrecoOriginal] = useState('');
   const [precoPromocional, setPrecoPromocional] = useState('');
+  const [informacoesAdicionais, setInformacoesAdicionais] = useState('');
+  const [validade, setValidade] = useState<Date | undefined>(undefined);
+  const [imagemSemFundo, setImagemSemFundo] = useState(false);
 
   const selectedProduct = products.find(p => p.codigo === selectedProductCode);
 
@@ -25,7 +36,7 @@ export const ProductForm = ({ products, selectedTemplate, onEncarteGenerate }: P
     e.preventDefault();
     
     if (!selectedProduct || !selectedTemplate || !precoOriginal || !precoPromocional) {
-      toast.error('Por favor, preencha todos os campos');
+      toast.error('Por favor, preencha todos os campos obrigatórios');
       return;
     }
 
@@ -46,7 +57,10 @@ export const ProductForm = ({ products, selectedTemplate, onEncarteGenerate }: P
       product: selectedProduct,
       precoOriginal: precoOrig,
       precoPromocional: precoPromo,
-      template: selectedTemplate
+      template: selectedTemplate,
+      informacoesAdicionais: informacoesAdicionais || undefined,
+      validade: validade ? format(validade, 'dd/MM/yyyy') : undefined,
+      imagemSemFundo
     };
 
     onEncarteGenerate(encarteData);
@@ -66,7 +80,7 @@ export const ProductForm = ({ products, selectedTemplate, onEncarteGenerate }: P
 
   if (products.length === 0 || !selectedTemplate) {
     return (
-      <Card className="p-6 text-center bg-gray-50">
+      <Card className="p-6 text-center bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200">
         <p className="text-gray-600">
           {products.length === 0 
             ? 'Faça upload de uma planilha para continuar' 
@@ -78,8 +92,8 @@ export const ProductForm = ({ products, selectedTemplate, onEncarteGenerate }: P
   }
 
   return (
-    <Card className="p-6 animate-fade-in border border-blue-200 shadow-md">
-      <h3 className="text-xl font-semibold mb-6 text-blue-700">
+    <Card className="p-6 animate-fade-in border border-blue-200 shadow-md bg-white">
+      <h3 className="text-xl font-semibold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-500">
         Dados do Encarte
       </h3>
       
@@ -151,6 +165,57 @@ export const ProductForm = ({ products, selectedTemplate, onEncarteGenerate }: P
             </p>
           </div>
         )}
+
+        <div className="space-y-2">
+          <Label htmlFor="validade" className="text-blue-700">Data de Validade</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                id="validade"
+                variant="outline"
+                className="w-full justify-start text-left font-normal border-blue-200"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {validade ? (
+                  format(validade, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
+                ) : (
+                  <span>Selecione uma data de validade</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={validade}
+                onSelect={setValidade}
+                initialFocus
+                locale={ptBR}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="informacoesAdicionais" className="text-blue-700">Informações Adicionais</Label>
+          <Textarea
+            id="informacoesAdicionais"
+            placeholder="Ex.: Válido apenas para unidades selecionadas, enquanto durarem os estoques."
+            value={informacoesAdicionais}
+            onChange={(e) => setInformacoesAdicionais(e.target.value)}
+            className="border-blue-200 focus:ring-blue-500 min-h-[80px]"
+          />
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Switch 
+            id="imagemSemFundo" 
+            checked={imagemSemFundo} 
+            onCheckedChange={setImagemSemFundo} 
+          />
+          <Label htmlFor="imagemSemFundo" className="text-blue-700 cursor-pointer">
+            Remover fundo da imagem automaticamente (experimental)
+          </Label>
+        </div>
 
         <Button 
           type="submit" 

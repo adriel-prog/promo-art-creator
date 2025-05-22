@@ -10,9 +10,12 @@ export interface EncarteData {
   precoOriginal: number;
   precoPromocional: number;
   template: TemplateType;
+  informacoesAdicionais?: string;
+  validade?: string;
+  imagemSemFundo?: boolean;
 }
 
-export type TemplateType = 'moderno' | 'classico' | 'minimalista';
+export type TemplateType = 'moderno' | 'classico' | 'minimalista' | 'branco' | 'escuro' | 'destaque';
 
 export interface Template {
   id: TemplateType;
