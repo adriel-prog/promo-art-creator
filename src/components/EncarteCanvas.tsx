@@ -61,27 +61,31 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
         return lines * lineHeight;
       };
 
-      // Calcular altura necessária para todas as informações
-      let calculatedHeight = 120; // Header
-      calculatedHeight += 420; // Área da imagem
-      calculatedHeight += 80; // Nome do produto
+      // Calcular altura necessária para todas as informações com espaçamento adequado
+      let calculatedHeight = 140; // Header (aumentado)
+      calculatedHeight += 450; // Área da imagem (aumentado)
+      calculatedHeight += 100; // Espaçamento após imagem
       
       // Altura do nome do produto (quebrado)
       const nameHeight = measureTextHeight(encarteData.product.nome, 'bold 32px Arial', canvasWidth - 100, 40);
       calculatedHeight += nameHeight;
       
-      calculatedHeight += 80; // Selo de oferta
+      calculatedHeight += 80; // Espaçamento após nome
+      calculatedHeight += 100; // Selo de oferta (aumentado)
+      calculatedHeight += 60; // Espaçamento após selo
       calculatedHeight += 80; // Preço original
-      calculatedHeight += 80; // Preço promocional
+      calculatedHeight += 40; // Espaçamento entre preços
+      calculatedHeight += 100; // Preço promocional (aumentado)
+      calculatedHeight += 80; // Espaçamento após preço promocional
       
       // Altura das informações adicionais (se existirem)
       if (encarteData.informacoesAdicionais && encarteData.informacoesAdicionais.trim() !== '') {
         const infoHeight = measureTextHeight(encarteData.informacoesAdicionais, 'bold 20px Arial', canvasWidth - 120, 25);
-        calculatedHeight += infoHeight + 60; // 60px para padding e background
+        calculatedHeight += infoHeight + 100; // 100px para padding e espaçamento
       }
       
-      calculatedHeight += 120; // Footer
-      calculatedHeight += 50; // Margem de segurança
+      calculatedHeight += 140; // Footer (aumentado)
+      calculatedHeight += 60; // Margem de segurança
 
       // Usar a altura calculada
       canvasHeight = Math.max(canvasHeight, calculatedHeight);
@@ -106,7 +110,7 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
       }
 
       // Header moderno da empresa
-      const headerHeight = 100;
+      const headerHeight = 120; // Aumentado
       if (template.id === 'escuro') {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
       } else {
@@ -118,13 +122,13 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
       ctx.fillStyle = template.id === 'escuro' ? '#FFFFFF' : template.colors.primary;
       ctx.font = 'bold 36px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('DISCAR DISTRIBUIDORA', canvas.width / 2, 45);
+      ctx.fillText('DISCAR DISTRIBUIDORA', canvas.width / 2, 50);
       
       ctx.font = '18px Arial';
-      ctx.fillText('Produtos Ambev - Qualidade Garantida', canvas.width / 2, 75);
+      ctx.fillText('Produtos Ambev - Qualidade Garantida', canvas.width / 2, 85);
 
       // Área central do produto
-      const productAreaY = headerHeight + 20;
+      const productAreaY = headerHeight + 30; // Aumentado espaçamento
       
       // Carregar e desenhar imagem do produto
       const img = new Image();
@@ -134,7 +138,7 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
         img.onload = () => {
           // Área central para a imagem
           const imageAreaWidth = canvas.width - 100;
-          const imageAreaHeight = 400;
+          const imageAreaHeight = 420; // Aumentado
           const imageAreaX = 50;
           const imageAreaY = productAreaY + 20;
           
@@ -142,7 +146,7 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
           ctx.fillStyle = template.id === 'branco' ? 'rgba(248, 250, 252, 0.8)' : 'rgba(255, 255, 255, 0.1)';
           ctx.fillRect(imageAreaX - 20, imageAreaY - 20, imageAreaWidth + 40, imageAreaHeight + 40);
 
-          // Calcular tamanho da imagem mantendo proporção
+          // ... keep existing code (cálculo e desenho da imagem)
           let imgWidth = img.width;
           let imgHeight = img.height;
           const maxImageSize = Math.min(imageAreaWidth, imageAreaHeight) * 0.8;
@@ -159,23 +163,18 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
             }
           }
 
-          // Aplicar transformações do editor
           const transform = encarteData.imageTransform || { scale: 1, x: 0, y: 0, rotation: 0 };
           
-          // Centralizar imagem base
           let imgX = imageAreaX + (imageAreaWidth - imgWidth) / 2;
           let imgY = imageAreaY + (imageAreaHeight - imgHeight) / 2;
           
-          // Aplicar escala e posição
           imgWidth *= transform.scale;
           imgHeight *= transform.scale;
           imgX += transform.x;
           imgY += transform.y;
 
-          // Salvar contexto para rotação
           ctx.save();
           
-          // Se há rotação, aplicar
           if (transform.rotation !== 0) {
             const centerX = imgX + imgWidth / 2;
             const centerY = imgY + imgHeight / 2;
@@ -184,7 +183,6 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
             ctx.translate(-centerX, -centerY);
           }
 
-          // Desenhar imagem com efeito de sombra
           ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
           ctx.shadowBlur = 20;
           ctx.shadowOffsetX = 0;
@@ -192,7 +190,6 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
           
           ctx.drawImage(img, imgX, imgY, imgWidth, imgHeight);
           
-          // Restaurar contexto
           ctx.restore();
           ctx.shadowColor = 'transparent';
           
@@ -200,7 +197,7 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
         };
         
         img.onerror = () => {
-          // Placeholder se imagem falhar
+          // ... keep existing code (placeholder se imagem falhar)
           const placeholderX = (canvas.width - 300) / 2;
           const placeholderY = productAreaY + 50;
           
@@ -221,8 +218,8 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
         img.src = encarteData.product.urlImagem;
       });
 
-      // Nome do produto - posição dinâmica
-      let currentY = productAreaY + 460;
+      // Nome do produto - posição dinâmica com espaçamento aumentado
+      let currentY = productAreaY + 490; // Aumentado espaçamento
       ctx.fillStyle = template.id === 'escuro' ? '#FFFFFF' : '#1e293b';
       ctx.font = 'bold 32px Arial';
       ctx.textAlign = 'center';
@@ -246,10 +243,10 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
         }
       }
       ctx.fillText(line, canvas.width / 2, currentY);
-      currentY += 50;
+      currentY += 70; // Aumentado espaçamento após nome
 
-      // Selo de oferta moderno
-      const seloHeight = 80;
+      // Selo de oferta moderno com espaçamento
+      const seloHeight = 90; // Aumentado
       
       const seloGradient = ctx.createLinearGradient(0, currentY, canvas.width, currentY + seloHeight);
       seloGradient.addColorStop(0, '#ef4444');
@@ -265,12 +262,12 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
       ctx.fillStyle = 'white';
       ctx.font = 'bold 36px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('OFERTA IMPERDÍVEL!', canvas.width / 2, currentY + 50);
+      ctx.fillText('OFERTA IMPERDÍVEL!', canvas.width / 2, currentY + 55);
       
       ctx.shadowColor = 'transparent';
-      currentY += seloHeight + 20;
+      currentY += seloHeight + 50; // Aumentado espaçamento após selo
 
-      // Preços
+      // Preços com espaçamento adequado
       // Preço original (riscado)
       ctx.fillStyle = template.id === 'escuro' ? '#94a3b8' : '#64748b';
       ctx.font = '28px Arial';
@@ -286,16 +283,16 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
       ctx.moveTo((canvas.width - textWidth) / 2, currentY - 10);
       ctx.lineTo((canvas.width + textWidth) / 2, currentY - 10);
       ctx.stroke();
-      currentY += 60;
+      currentY += 80; // Aumentado espaçamento entre preços
 
-      // Preço promocional
+      // Preço promocional com destaque
       ctx.fillStyle = template.id === 'escuro' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(34, 197, 94, 0.1)';
-      ctx.fillRect(100, currentY - 40, canvas.width - 200, 80);
+      ctx.fillRect(100, currentY - 50, canvas.width - 200, 100); // Aumentado altura
       
       ctx.fillStyle = template.id === 'escuro' ? '#ffffff' : '#22c55e';
       ctx.font = 'bold 56px Arial';
       ctx.fillText(`R$ ${encarteData.precoPromocional.toFixed(2).replace('.', ',')}`, canvas.width / 2, currentY);
-      currentY += 70;
+      currentY += 90; // Aumentado espaçamento após preço promocional
 
       // Badge de desconto
       const desconto = Math.round(((encarteData.precoOriginal - encarteData.precoPromocional) / encarteData.precoOriginal) * 100);
@@ -319,17 +316,20 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
       ctx.fillText(`-${desconto}%`, badgeX + badgeSize/2, badgeY + badgeSize/2 + 10);
       ctx.shadowColor = 'transparent';
 
-      // Informações adicionais (garantindo que apareçam completamente)
+      // Informações adicionais com espaçamento adequado
       if (encarteData.informacoesAdicionais && encarteData.informacoesAdicionais.trim() !== '') {
         console.log('Renderizando informações adicionais:', encarteData.informacoesAdicionais);
         
+        // Adicionar espaçamento antes das informações
+        currentY += 40;
+        
         // Calcular altura necessária para o background
         const infoTextHeight = measureTextHeight(encarteData.informacoesAdicionais, 'bold 20px Arial', canvas.width - 120, 25);
-        const bgHeight = infoTextHeight + 30; // 15px padding top/bottom
+        const bgHeight = infoTextHeight + 40; // Aumentado padding
         
         // Background sutil para as informações
         ctx.fillStyle = template.id === 'escuro' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
-        ctx.fillRect(30, currentY - 15, canvas.width - 60, bgHeight);
+        ctx.fillRect(30, currentY - 20, canvas.width - 60, bgHeight);
         
         ctx.fillStyle = template.id === 'escuro' ? '#E5E7EB' : '#374151';
         ctx.font = 'bold 20px Arial';
@@ -358,32 +358,32 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
           currentY += 25;
         }
         
-        currentY += 30; // Espaço após as informações
+        currentY += 50; // Aumentado espaçamento após as informações
       }
 
-      // Footer - sempre no final
-      currentY += 20; // Margem antes do footer
+      // Footer - sempre no final com espaçamento adequado
+      currentY += 30; // Margem antes do footer
       
       if (template.id === 'escuro') {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
       } else {
         ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
       }
-      ctx.fillRect(0, currentY, canvas.width, 120);
+      ctx.fillRect(0, currentY, canvas.width, 130); // Aumentado altura
       
       ctx.fillStyle = template.id === 'escuro' ? '#FFFFFF' : template.colors.primary;
       ctx.font = 'bold 20px Arial';
       ctx.textAlign = 'center';
       
       if (encarteData.validade) {
-        ctx.fillText(`Válido até ${encarteData.validade}`, canvas.width / 2, currentY + 35);
+        ctx.fillText(`Válido até ${encarteData.validade}`, canvas.width / 2, currentY + 40);
       } else {
-        ctx.fillText('Válido enquanto durarem os estoques', canvas.width / 2, currentY + 35);
+        ctx.fillText('Válido enquanto durarem os estoques', canvas.width / 2, currentY + 40);
       }
       
       ctx.font = '16px Arial';
-      ctx.fillText('Discar Distribuidora - Parceira oficial Ambev', canvas.width / 2, currentY + 65);
-      ctx.fillText('www.discardistribuidora.com.br', canvas.width / 2, currentY + 90);
+      ctx.fillText('Discar Distribuidora - Parceira oficial Ambev', canvas.width / 2, currentY + 75);
+      ctx.fillText('www.discardistribuidora.com.br', canvas.width / 2, currentY + 105);
 
     } catch (error) {
       console.error('Erro ao gerar encarte:', error);
