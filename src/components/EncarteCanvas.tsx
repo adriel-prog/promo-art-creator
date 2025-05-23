@@ -1,14 +1,14 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { EncarteData } from '@/types/product';
+import { ImageTransform } from '@/components/ImageEditor';
 import { templates } from '@/data/templates';
 import { toast } from 'sonner';
-import { Download, Share2 } from 'lucide-react';
+import { Download, Share2, Sparkles } from 'lucide-react';
 
 interface EncarteCanvasProps {
-  encarteData: EncarteData | null;
+  encarteData: (EncarteData & { imageTransform?: ImageTransform }) | null;
 }
 
 export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
@@ -30,9 +30,9 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
     if (!ctx) return;
 
     try {
-      // Configurações do canvas
-      canvas.width = 600;
-      canvas.height = 800;
+      // Configurações do canvas - maior resolução para melhor qualidade
+      canvas.width = 800;
+      canvas.height = 1000;
 
       const template = templates.find(t => t.id === encarteData.template);
       if (!template) return;
@@ -40,7 +40,7 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
       // Limpar canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Background com gradiente ou branco para o template branco
+      // Background com gradiente moderno
       if (template.id === 'branco') {
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -52,132 +52,134 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
-      // Header da empresa - adaptado para cada template
+      // Header moderno da empresa
+      const headerHeight = 100;
       if (template.id === 'escuro') {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
       } else {
         ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
       }
-      ctx.fillRect(0, 0, canvas.width, 80);
+      ctx.fillRect(0, 0, canvas.width, headerHeight);
       
+      // Logo/Nome da empresa
       ctx.fillStyle = template.id === 'escuro' ? '#FFFFFF' : template.colors.primary;
-      ctx.font = 'bold 28px Arial';
+      ctx.font = 'bold 36px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('DISCAR DISTRIBUIDORA', canvas.width / 2, 35);
+      ctx.fillText('DISCAR DISTRIBUIDORA', canvas.width / 2, 45);
       
-      ctx.font = '16px Arial';
-      ctx.fillText('Produtos Ambev - Qualidade Garantida', canvas.width / 2, 60);
+      ctx.font = '18px Arial';
+      ctx.fillText('Produtos Ambev - Qualidade Garantida', canvas.width / 2, 75);
 
-      // Área do produto
-      const productAreaY = 100;
-      const productAreaHeight = 500;
+      // Área central do produto - maior destaque
+      const productAreaY = headerHeight + 20;
+      const productAreaHeight = 600;
       
-      // Fundo para área do produto
-      if (template.id === 'branco') {
-        ctx.fillStyle = 'rgba(249, 250, 251, 0.95)'; // Cinza muito claro
-      } else if (template.id === 'escuro') {
-        ctx.fillStyle = 'rgba(30, 41, 59, 0.95)'; // Azul escuro
-      } else {
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-      }
-      ctx.fillRect(20, productAreaY, canvas.width - 40, productAreaHeight);
-
-      // Carregar e desenhar imagem do produto
+      // Carregar e desenhar imagem do produto (DESTAQUE PRINCIPAL)
       const img = new Image();
       img.crossOrigin = 'anonymous';
       
       await new Promise<void>((resolve) => {
         img.onload = () => {
-          // Calcular proporções para manter aspecto
+          // Área central para a imagem - muito maior
+          const imageAreaWidth = canvas.width - 100;
+          const imageAreaHeight = 400;
+          const imageAreaX = 50;
+          const imageAreaY = productAreaY + 20;
+          
+          // Fundo sutil para a imagem
+          ctx.fillStyle = template.id === 'branco' ? 'rgba(248, 250, 252, 0.8)' : 'rgba(255, 255, 255, 0.1)';
+          ctx.fillRect(imageAreaX - 20, imageAreaY - 20, imageAreaWidth + 40, imageAreaHeight + 40);
+
+          // Calcular tamanho da imagem mantendo proporção
           let imgWidth = img.width;
           let imgHeight = img.height;
-          const maxSize = 250; // Tamanho máximo em qualquer dimensão
+          const maxImageSize = Math.min(imageAreaWidth, imageAreaHeight) * 0.8;
           
           if (imgWidth > imgHeight) {
-            if (imgWidth > maxSize) {
-              imgHeight = (imgHeight * maxSize) / imgWidth;
-              imgWidth = maxSize;
+            if (imgWidth > maxImageSize) {
+              imgHeight = (imgHeight * maxImageSize) / imgWidth;
+              imgWidth = maxImageSize;
             }
           } else {
-            if (imgHeight > maxSize) {
-              imgWidth = (imgWidth * maxSize) / imgHeight;
-              imgHeight = maxSize;
+            if (imgHeight > maxImageSize) {
+              imgWidth = (imgWidth * maxImageSize) / imgHeight;
+              imgHeight = maxImageSize;
             }
           }
+
+          // Aplicar transformações do editor
+          const transform = encarteData.imageTransform || { scale: 1, x: 0, y: 0, rotation: 0 };
           
-          // Centralizar na área do produto
-          const imgX = (canvas.width - imgWidth) / 2;
-          const imgY = productAreaY + 20;
+          // Centralizar imagem base
+          let imgX = imageAreaX + (imageAreaWidth - imgWidth) / 2;
+          let imgY = imageAreaY + (imageAreaHeight - imgHeight) / 2;
           
-          // Se for para remover o fundo e não for o template branco
-          if (encarteData.imagemSemFundo && template.id !== 'branco') {
-            try {
-              // Aqui seria implementado um algoritmo de remoção de fundo
-              // Esta é uma simulação simplificada - na implementação real, usaríamos uma biblioteca como ml5.js ou RemoveBg API
-              
-              // 1. Criar um canvas temporário
-              const tempCanvas = document.createElement('canvas');
-              tempCanvas.width = imgWidth;
-              tempCanvas.height = imgHeight;
-              const tempCtx = tempCanvas.getContext('2d');
-              
-              if (tempCtx) {
-                // 2. Desenhar a imagem no canvas temporário
-                tempCtx.drawImage(img, 0, 0, imgWidth, imgHeight);
-                
-                // 3. Desenhamos com transparência "fake" em torno da parte central
-                // Nota: isto é apenas uma simulação, não uma real remoção de fundo
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(imgX + imgWidth/2, imgY + imgHeight/2, Math.min(imgWidth, imgHeight)/2 - 10, 0, Math.PI * 2);
-                ctx.clip();
-                ctx.drawImage(img, imgX, imgY, imgWidth, imgHeight);
-                ctx.restore();
-              } else {
-                // Fallback se não conseguir criar o contexto temporário
-                ctx.drawImage(img, imgX, imgY, imgWidth, imgHeight);
-              }
-            } catch (error) {
-              console.error('Erro ao processar imagem sem fundo:', error);
-              ctx.drawImage(img, imgX, imgY, imgWidth, imgHeight);
-            }
-          } else {
-            // Desenho normal
-            ctx.drawImage(img, imgX, imgY, imgWidth, imgHeight);
+          // Aplicar escala e posição
+          imgWidth *= transform.scale;
+          imgHeight *= transform.scale;
+          imgX += transform.x;
+          imgY += transform.y;
+
+          // Salvar contexto para rotação
+          ctx.save();
+          
+          // Se há rotação, aplicar
+          if (transform.rotation !== 0) {
+            const centerX = imgX + imgWidth / 2;
+            const centerY = imgY + imgHeight / 2;
+            ctx.translate(centerX, centerY);
+            ctx.rotate((transform.rotation * Math.PI) / 180);
+            ctx.translate(-centerX, -centerY);
           }
+
+          // Desenhar imagem com efeito de sombra
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+          ctx.shadowBlur = 20;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 10;
+          
+          ctx.drawImage(img, imgX, imgY, imgWidth, imgHeight);
+          
+          // Restaurar contexto
+          ctx.restore();
+          ctx.shadowColor = 'transparent';
           
           resolve();
         };
         
         img.onerror = () => {
-          // Desenhar placeholder se imagem falhar
-          ctx.fillStyle = '#f3f4f6';
-          ctx.fillRect((canvas.width - 200) / 2, productAreaY + 20, 200, 200);
-          ctx.fillStyle = '#9ca3af';
-          ctx.font = '16px Arial';
+          // Placeholder moderno se imagem falhar
+          const placeholderX = (canvas.width - 300) / 2;
+          const placeholderY = productAreaY + 50;
+          
+          ctx.fillStyle = '#f8fafc';
+          ctx.fillRect(placeholderX, placeholderY, 300, 300);
+          ctx.strokeStyle = '#e2e8f0';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(placeholderX, placeholderY, 300, 300);
+          
+          ctx.fillStyle = '#64748b';
+          ctx.font = 'bold 24px Arial';
           ctx.textAlign = 'center';
-          ctx.fillText('Imagem não', canvas.width / 2, productAreaY + 110);
-          ctx.fillText('disponível', canvas.width / 2, productAreaY + 130);
+          ctx.fillText('Imagem não', canvas.width / 2, placeholderY + 140);
+          ctx.fillText('disponível', canvas.width / 2, placeholderY + 170);
           resolve();
         };
         
         img.src = encarteData.product.urlImagem;
       });
 
-      // Nome do produto
-      if (template.id === 'escuro') {
-        ctx.fillStyle = '#FFFFFF';
-      } else {
-        ctx.fillStyle = '#1f2937';
-      }
-      ctx.font = 'bold 24px Arial';
+      // Nome do produto - tipografia moderna
+      const nameY = productAreaY + 460;
+      ctx.fillStyle = template.id === 'escuro' ? '#FFFFFF' : '#1e293b';
+      ctx.font = 'bold 32px Arial';
       ctx.textAlign = 'center';
       
-      // Quebrar texto se for muito longo
-      const maxWidth = canvas.width - 80;
+      // Quebrar texto do nome do produto
+      const maxWidth = canvas.width - 100;
       const words = encarteData.product.nome.split(' ');
       let line = '';
-      let y = productAreaY + 300;
+      let y = nameY;
       
       for (let n = 0; n < words.length; n++) {
         const testLine = line + words[n] + ' ';
@@ -187,66 +189,100 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
         if (testWidth > maxWidth && n > 0) {
           ctx.fillText(line, canvas.width / 2, y);
           line = words[n] + ' ';
-          y += 30;
+          y += 40;
         } else {
           line = testLine;
         }
       }
       ctx.fillText(line, canvas.width / 2, y);
 
-      // Selo de oferta
-      const seloY = y + 40;
-      ctx.fillStyle = template.colors.secondary;
-      ctx.fillRect(50, seloY, canvas.width - 100, 60);
+      // Selo de oferta moderno
+      const seloY = y + 50;
+      const seloHeight = 80;
+      
+      // Gradiente para o selo
+      const seloGradient = ctx.createLinearGradient(0, seloY, canvas.width, seloY + seloHeight);
+      seloGradient.addColorStop(0, '#ef4444');
+      seloGradient.addColorStop(1, '#dc2626');
+      
+      ctx.fillStyle = seloGradient;
+      ctx.fillRect(50, seloY, canvas.width - 100, seloHeight);
+      
+      // Sombra do selo
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+      ctx.shadowBlur = 15;
+      ctx.shadowOffsetY = 5;
       
       ctx.fillStyle = 'white';
-      ctx.font = 'bold 32px Arial';
+      ctx.font = 'bold 36px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('OFERTA IMPERDÍVEL!', canvas.width / 2, seloY + 40);
+      ctx.fillText('OFERTA IMPERDÍVEL!', canvas.width / 2, seloY + 50);
+      
+      ctx.shadowColor = 'transparent';
 
-      // Preços
-      const precosY = seloY + 80;
+      // Preços com design moderno
+      const precosY = seloY + 120;
       
       // Preço original (riscado)
-      ctx.fillStyle = template.id === 'escuro' ? '#BFDBFE' : '#6b7280';
-      ctx.font = '24px Arial';
+      ctx.fillStyle = template.id === 'escuro' ? '#94a3b8' : '#64748b';
+      ctx.font = '28px Arial';
       ctx.textAlign = 'center';
       const precoOrigText = `DE R$ ${encarteData.precoOriginal.toFixed(2).replace('.', ',')}`;
       ctx.fillText(precoOrigText, canvas.width / 2, precosY);
       
       // Linha riscando o preço original
       const textWidth = ctx.measureText(precoOrigText).width;
-      ctx.strokeStyle = template.id === 'escuro' ? '#BFDBFE' : '#6b7280';
-      ctx.lineWidth = 3;
+      ctx.strokeStyle = template.id === 'escuro' ? '#94a3b8' : '#64748b';
+      ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.moveTo((canvas.width - textWidth) / 2, precosY - 8);
-      ctx.lineTo((canvas.width + textWidth) / 2, precosY - 8);
+      ctx.moveTo((canvas.width - textWidth) / 2, precosY - 10);
+      ctx.lineTo((canvas.width + textWidth) / 2, precosY - 10);
       ctx.stroke();
 
-      // Preço promocional
-      ctx.fillStyle = template.colors.primary;
-      ctx.font = 'bold 48px Arial';
-      ctx.fillText(`R$ ${encarteData.precoPromocional.toFixed(2).replace('.', ',')}`, canvas.width / 2, precosY + 60);
+      // Preço promocional - destaque especial
+      const precoPromoY = precosY + 80;
+      
+      // Background para preço promocional
+      ctx.fillStyle = template.id === 'escuro' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(34, 197, 94, 0.1)';
+      ctx.fillRect(100, precoPromoY - 50, canvas.width - 200, 80);
+      
+      ctx.fillStyle = template.id === 'escuro' ? '#ffffff' : '#22c55e';
+      ctx.font = 'bold 56px Arial';
+      ctx.fillText(`R$ ${encarteData.precoPromocional.toFixed(2).replace('.', ',')}`, canvas.width / 2, precoPromoY);
 
-      // Calcular desconto
+      // Badge de desconto moderno
       const desconto = Math.round(((encarteData.precoOriginal - encarteData.precoPromocional) / encarteData.precoOriginal) * 100);
       
-      // Badge de desconto
+      const badgeSize = 120;
+      const badgeX = canvas.width - badgeSize - 30;
+      const badgeY = productAreaY + 30;
+      
+      // Círculo do badge
       ctx.fillStyle = '#dc2626';
-      ctx.fillRect(canvas.width - 120, productAreaY + 40, 100, 40);
+      ctx.beginPath();
+      ctx.arc(badgeX + badgeSize/2, badgeY + badgeSize/2, badgeSize/2, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Sombra do badge
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetY = 5;
+      
+      // Texto do desconto
       ctx.fillStyle = 'white';
-      ctx.font = 'bold 18px Arial';
+      ctx.font = 'bold 28px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText(`-${desconto}%`, canvas.width - 70, productAreaY + 65);
+      ctx.fillText(`-${desconto}%`, badgeX + badgeSize/2, badgeY + badgeSize/2 + 10);
+      
+      ctx.shadowColor = 'transparent';
 
       // Informações adicionais (se existirem)
       if (encarteData.informacoesAdicionais) {
-        const infoY = precosY + 100;
+        const infoY = precoPromoY + 60;
         ctx.fillStyle = template.id === 'escuro' ? '#D1D5DB' : '#4B5563';
-        ctx.font = '16px Arial';
+        ctx.font = '18px Arial';
         ctx.textAlign = 'center';
         
-        // Quebrar texto de informações adicionais
         const infoWords = encarteData.informacoesAdicionais.split(' ');
         let infoLine = '';
         let infoLineY = infoY;
@@ -256,10 +292,10 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
           const metrics = ctx.measureText(testLine);
           const testWidth = metrics.width;
           
-          if (testWidth > maxWidth && n > 0) {
+          if (testWidth > maxWidth - 100 && n > 0) {
             ctx.fillText(infoLine, canvas.width / 2, infoLineY);
             infoLine = infoWords[n] + ' ';
-            infoLineY += 20;
+            infoLineY += 25;
           } else {
             infoLine = testLine;
           }
@@ -267,29 +303,28 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
         ctx.fillText(infoLine, canvas.width / 2, infoLineY);
       }
 
-      // Footer
-      const footerY = canvas.height - 100;
+      // Footer moderno
+      const footerY = canvas.height - 120;
       if (template.id === 'escuro') {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
       } else {
         ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
       }
-      ctx.fillRect(0, footerY, canvas.width, 100);
+      ctx.fillRect(0, footerY, canvas.width, 120);
       
       ctx.fillStyle = template.id === 'escuro' ? '#FFFFFF' : template.colors.primary;
-      ctx.font = 'bold 18px Arial';
+      ctx.font = 'bold 20px Arial';
       ctx.textAlign = 'center';
       
-      // Texto de validade
       if (encarteData.validade) {
-        ctx.fillText(`Válido até ${encarteData.validade}`, canvas.width / 2, footerY + 30);
+        ctx.fillText(`Válido até ${encarteData.validade}`, canvas.width / 2, footerY + 35);
       } else {
-        ctx.fillText('Válido enquanto durarem os estoques', canvas.width / 2, footerY + 30);
+        ctx.fillText('Válido enquanto durarem os estoques', canvas.width / 2, footerY + 35);
       }
       
-      ctx.font = '14px Arial';
-      ctx.fillText('Discar Distribuidora - Parceira oficial Ambev', canvas.width / 2, footerY + 55);
-      ctx.fillText('www.discardistribuidora.com.br', canvas.width / 2, footerY + 75);
+      ctx.font = '16px Arial';
+      ctx.fillText('Discar Distribuidora - Parceira oficial Ambev', canvas.width / 2, footerY + 65);
+      ctx.fillText('www.discardistribuidora.com.br', canvas.width / 2, footerY + 90);
 
     } catch (error) {
       console.error('Erro ao gerar encarte:', error);
@@ -307,7 +342,6 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
       const link = document.createElement('a');
       
       if (format === 'jpg') {
-        // Para JPG, criar um canvas temporário com fundo branco
         const tempCanvas = document.createElement('canvas');
         const tempCtx = tempCanvas.getContext('2d');
         if (!tempCtx) return;
@@ -315,14 +349,11 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
         tempCanvas.width = canvas.width;
         tempCanvas.height = canvas.height;
         
-        // Preencher com branco
         tempCtx.fillStyle = 'white';
         tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-        
-        // Desenhar o canvas original por cima
         tempCtx.drawImage(canvas, 0, 0);
         
-        link.href = tempCanvas.toDataURL('image/jpeg', 0.9);
+        link.href = tempCanvas.toDataURL('image/jpeg', 0.95);
       } else {
         link.href = canvas.toDataURL('image/png');
       }
@@ -346,7 +377,6 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
     try {
       const canvas = canvasRef.current;
       
-      // Converter canvas para blob
       const blob = await new Promise<Blob>((resolve, reject) => {
         canvas.toBlob(
           (blob) => {
@@ -361,7 +391,6 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
         );
       });
       
-      // Verificar se a API de compartilhamento está disponível
       if (navigator.share) {
         const file = new File([blob], 'encarte.png', { type: 'image/png' });
         
@@ -373,7 +402,6 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
         
         toast.success('Encarte compartilhado com sucesso!');
       } else {
-        // Fallback se o navegador não suportar a API Web Share
         toast.info('Este navegador não suporta compartilhamento direto. Faça o download e compartilhe manualmente.');
         downloadEncarte('png');
       }
@@ -385,61 +413,70 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
 
   if (!encarteData) {
     return (
-      <Card className="p-8 text-center bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200">
+      <Card className="p-8 text-center bg-gradient-to-br from-blue-50 via-white to-purple-50 border-2 border-blue-100 shadow-lg">
         <div className="text-gray-500">
-          <p className="text-lg font-medium mb-2">Prévia do Encarte</p>
-          <p>Preencha os dados do produto para gerar o encarte</p>
+          <Sparkles className="mx-auto h-16 w-16 text-blue-400 mb-4 animate-pulse" />
+          <p className="text-xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Prévia do Encarte
+          </p>
+          <p className="text-gray-600">Preencha os dados do produto para gerar o encarte</p>
         </div>
       </Card>
     );
   }
 
   return (
-    <Card className="p-6 animate-scale-in bg-white border border-blue-200 shadow-lg">
+    <Card className="p-6 bg-white border-2 border-blue-100 shadow-lg hover:shadow-xl transition-all duration-300">
       <div className="text-center mb-6">
-        <h3 className="text-xl font-semibold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-500">
-          Encarte Gerado
-        </h3>
-        <p className="text-gray-600">{encarteData.product.nome}</p>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Sparkles className="h-6 w-6 text-purple-500" />
+          <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Encarte Gerado
+          </h3>
+        </div>
+        <p className="text-gray-600 font-medium">{encarteData.product.nome}</p>
       </div>
       
       <div className="flex justify-center mb-6">
-        <canvas
-          ref={canvasRef}
-          className="border border-gray-200 rounded-lg shadow-lg max-w-full h-auto"
-          style={{ maxWidth: '400px' }}
-        />
-      </div>
-
-      {isGenerating && (
-        <div className="text-center mb-4">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-          <p className="text-gray-600 mt-2">Gerando encarte...</p>
+        <div className="relative group">
+          <canvas
+            ref={canvasRef}
+            className="border-2 border-gray-200 rounded-xl shadow-lg max-w-full h-auto group-hover:shadow-2xl transition-shadow duration-300"
+            style={{ maxWidth: '400px' }}
+          />
+          {isGenerating && (
+            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center">
+              <div className="text-center">
+                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+                <p className="text-gray-700 mt-2 font-medium">Gerando encarte...</p>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       <div className="grid grid-cols-2 gap-3">
         <Button
           onClick={() => downloadEncarte('png')}
           disabled={isGenerating}
-          className="bg-gradient-to-r from-blue-600 to-blue-800 hover:opacity-90 text-white"
+          className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold transition-all duration-300 transform hover:scale-105"
         >
           <Download className="w-4 h-4 mr-2" />
-          Baixar PNG
+          PNG
         </Button>
         <Button
           onClick={() => downloadEncarte('jpg')}
           disabled={isGenerating}
           variant="outline"
-          className="border-blue-300 hover:bg-blue-50"
+          className="border-2 border-blue-300 hover:bg-blue-50 font-semibold transition-all duration-300 transform hover:scale-105"
         >
           <Download className="w-4 h-4 mr-2" />
-          Baixar JPG
+          JPG
         </Button>
         <Button
           onClick={shareEncarte}
           disabled={isGenerating}
-          className="col-span-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-90 text-white mt-2"
+          className="col-span-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold mt-2 transition-all duration-300 transform hover:scale-105"
         >
           <Share2 className="w-4 h-4 mr-2" />
           Compartilhar Encarte

@@ -5,32 +5,34 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Product, EncarteData, TemplateType } from '@/types/product';
+import { ProductSearch } from '@/components/ProductSearch';
+import { ImageEditor, ImageTransform } from '@/components/ImageEditor';
 import { toast } from 'sonner';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { cn } from '@/lib/utils';
 
 interface ProductFormProps {
   products: Product[];
   selectedTemplate: TemplateType | null;
-  onEncarteGenerate: (data: EncarteData) => void;
+  onEncarteGenerate: (data: EncarteData & { imageTransform?: ImageTransform }) => void;
 }
 
 export const ProductForm = ({ products, selectedTemplate, onEncarteGenerate }: ProductFormProps) => {
-  const [selectedProductCode, setSelectedProductCode] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [precoOriginal, setPrecoOriginal] = useState('');
   const [precoPromocional, setPrecoPromocional] = useState('');
   const [informacoesAdicionais, setInformacoesAdicionais] = useState('');
   const [validade, setValidade] = useState<Date | undefined>(undefined);
   const [imagemSemFundo, setImagemSemFundo] = useState(false);
-
-  const selectedProduct = products.find(p => p.codigo === selectedProductCode);
+  const [imageTransform, setImageTransform] = useState<ImageTransform>({ 
+    scale: 1, x: 0, y: 0, rotation: 0 
+  });
+  const [showImageEditor, setShowImageEditor] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,14 +55,15 @@ export const ProductForm = ({ products, selectedTemplate, onEncarteGenerate }: P
       return;
     }
 
-    const encarteData: EncarteData = {
+    const encarteData: EncarteData & { imageTransform?: ImageTransform } = {
       product: selectedProduct,
       precoOriginal: precoOrig,
       precoPromocional: precoPromo,
       template: selectedTemplate,
       informacoesAdicionais: informacoesAdicionais || undefined,
       validade: validade ? format(validade, 'dd/MM/yyyy') : undefined,
-      imagemSemFundo
+      imagemSemFundo,
+      imageTransform
     };
 
     onEncarteGenerate(encarteData);
@@ -80,151 +83,156 @@ export const ProductForm = ({ products, selectedTemplate, onEncarteGenerate }: P
 
   if (products.length === 0 || !selectedTemplate) {
     return (
-      <Card className="p-6 text-center bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200">
-        <p className="text-gray-600">
-          {products.length === 0 
-            ? 'Faça upload de uma planilha para continuar' 
-            : 'Selecione um modelo de encarte para continuar'
-          }
-        </p>
+      <Card className="p-8 text-center bg-gradient-to-br from-blue-50 via-white to-purple-50 border-2 border-blue-100 shadow-lg">
+        <div className="text-gray-600">
+          <Sparkles className="mx-auto h-12 w-12 text-blue-400 mb-4" />
+          <p className="text-lg font-medium mb-2">Vamos começar!</p>
+          <p className="text-gray-500">
+            {products.length === 0 
+              ? 'Faça upload de uma planilha para continuar' 
+              : 'Selecione um modelo de encarte para continuar'
+            }
+          </p>
+        </div>
       </Card>
     );
   }
 
   return (
-    <Card className="p-6 animate-fade-in border border-blue-200 shadow-md bg-white">
-      <h3 className="text-xl font-semibold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-500">
-        Dados do Encarte
-      </h3>
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="product" className="text-blue-700">Produto</Label>
-          <Select value={selectedProductCode} onValueChange={setSelectedProductCode}>
-            <SelectTrigger className="border-blue-200 focus:ring-blue-500">
-              <SelectValue placeholder="Selecione um produto" />
-            </SelectTrigger>
-            <SelectContent>
-              {products.map((product) => (
-                <SelectItem key={product.codigo} value={product.codigo}>
-                  {product.codigo} - {product.nome}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+    <div className="space-y-6">
+      <Card className="p-6 bg-white border-2 border-blue-100 shadow-lg hover:shadow-xl transition-all duration-300">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+            <Sparkles className="w-4 h-4 text-white" />
+          </div>
+          <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Dados do Encarte
+          </h3>
         </div>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-3">
+            <Label className="text-gray-700 font-medium">Produto</Label>
+            <ProductSearch
+              products={products}
+              selectedProduct={selectedProduct}
+              onProductSelect={(product) => {
+                setSelectedProduct(product);
+                setShowImageEditor(true);
+              }}
+            />
+          </div>
 
-        {selectedProduct && (
-          <div className="bg-blue-50 rounded-lg p-4 space-y-2 border border-blue-100">
-            <p className="text-sm font-medium text-blue-700">Produto selecionado:</p>
-            <p className="text-sm text-blue-600">{selectedProduct.nome}</p>
-            <div className="flex items-center gap-2">
-              <img 
-                src={selectedProduct.urlImagem} 
-                alt={selectedProduct.nome}
-                className="w-16 h-16 object-cover rounded border border-blue-200"
-                onError={(e) => {
-                  e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCA2NCA2NCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIGZpbGw9IiNlYmYyZmEiIHJ4PSI4Ii8+PHBhdGggZD0iTTMyIDI4YzIuMjA5IDAgNC0xLjc5MSA0LTRzLTEuNzkxLTQtNC00LTQgMS43OTEtNCA0IDEuNzkxIDQgNCA0em0xMiAySDIwdjEyaDE2VjM2aDh2LTZIMzJ2LTJ6bS0yNCAwaDJ2Mkg0OHYtMkgyMHoiIGZpbGw9IiM0Mjg4ZDkiLz48L3N2Zz4=';
-                }}
-              />
-              <p className="text-xs text-blue-600 break-all">{selectedProduct.urlImagem}</p>
+          {selectedProduct && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-3">
+                <Label htmlFor="precoOriginal" className="text-gray-700 font-medium">Preço Original (R$)</Label>
+                <Input
+                  id="precoOriginal"
+                  type="text"
+                  placeholder="14,90"
+                  value={precoOriginal}
+                  onChange={(e) => setPrecoOriginal(e.target.value)}
+                  className="h-12 border-2 border-gray-200 focus:border-blue-400 transition-colors"
+                />
+              </div>
+              
+              <div className="space-y-3">
+                <Label htmlFor="precoPromocional" className="text-gray-700 font-medium">Preço Promocional (R$)</Label>
+                <Input
+                  id="precoPromocional"
+                  type="text"
+                  placeholder="9,99"
+                  value={precoPromocional}
+                  onChange={(e) => setPrecoPromocional(e.target.value)}
+                  className="h-12 border-2 border-gray-200 focus:border-blue-400 transition-colors"
+                />
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="precoOriginal" className="text-blue-700">Preço Original (R$)</Label>
-            <Input
-              id="precoOriginal"
-              type="text"
-              placeholder="14,90"
-              value={precoOriginal}
-              onChange={(e) => setPrecoOriginal(e.target.value)}
-              className="border-blue-200 focus:ring-blue-500"
+          {calcularDesconto() > 0 && (
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">%</span>
+                </div>
+                <p className="text-green-800 font-semibold">
+                  Desconto de {calcularDesconto()}% - Economia de R$ {(parseFloat(precoOriginal.replace(',', '.')) - parseFloat(precoPromocional.replace(',', '.'))).toFixed(2).replace('.', ',')}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <Label htmlFor="validade" className="text-gray-700 font-medium">Data de Validade</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  id="validade"
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal h-12 border-2 border-gray-200 hover:border-blue-400 transition-colors"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {validade ? (
+                    format(validade, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
+                  ) : (
+                    <span className="text-gray-500">Selecione uma data de validade</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={validade}
+                  onSelect={setValidade}
+                  initialFocus
+                  locale={ptBR}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <div className="space-y-3">
+            <Label htmlFor="informacoesAdicionais" className="text-gray-700 font-medium">Informações Adicionais</Label>
+            <Textarea
+              id="informacoesAdicionais"
+              placeholder="Ex.: Válido apenas para unidades selecionadas, enquanto durarem os estoques."
+              value={informacoesAdicionais}
+              onChange={(e) => setInformacoesAdicionais(e.target.value)}
+              className="border-2 border-gray-200 focus:border-blue-400 transition-colors min-h-[100px] resize-none"
             />
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="precoPromocional" className="text-blue-700">Preço Promocional (R$)</Label>
-            <Input
-              id="precoPromocional"
-              type="text"
-              placeholder="9,99"
-              value={precoPromocional}
-              onChange={(e) => setPrecoPromocional(e.target.value)}
-              className="border-blue-200 focus:ring-blue-500"
+
+          <div className="flex items-center space-x-3">
+            <Switch 
+              id="imagemSemFundo" 
+              checked={imagemSemFundo} 
+              onCheckedChange={setImagemSemFundo} 
             />
+            <Label htmlFor="imagemSemFundo" className="text-gray-700 font-medium cursor-pointer">
+              Remover fundo da imagem automaticamente (experimental)
+            </Label>
           </div>
-        </div>
 
-        {calcularDesconto() > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <p className="text-sm font-medium text-blue-800">
-              💰 Desconto de {calcularDesconto()}%
-            </p>
-          </div>
-        )}
+          <Button 
+            type="submit" 
+            className="w-full h-14 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
+            disabled={!selectedProduct || !precoOriginal || !precoPromocional}
+          >
+            <Sparkles className="mr-2" />
+            Gerar Encarte Promocional
+          </Button>
+        </form>
+      </Card>
 
-        <div className="space-y-2">
-          <Label htmlFor="validade" className="text-blue-700">Data de Validade</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                id="validade"
-                variant="outline"
-                className="w-full justify-start text-left font-normal border-blue-200"
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {validade ? (
-                  format(validade, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
-                ) : (
-                  <span>Selecione uma data de validade</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={validade}
-                onSelect={setValidade}
-                initialFocus
-                locale={ptBR}
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="informacoesAdicionais" className="text-blue-700">Informações Adicionais</Label>
-          <Textarea
-            id="informacoesAdicionais"
-            placeholder="Ex.: Válido apenas para unidades selecionadas, enquanto durarem os estoques."
-            value={informacoesAdicionais}
-            onChange={(e) => setInformacoesAdicionais(e.target.value)}
-            className="border-blue-200 focus:ring-blue-500 min-h-[80px]"
-          />
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <Switch 
-            id="imagemSemFundo" 
-            checked={imagemSemFundo} 
-            onCheckedChange={setImagemSemFundo} 
-          />
-          <Label htmlFor="imagemSemFundo" className="text-blue-700 cursor-pointer">
-            Remover fundo da imagem automaticamente (experimental)
-          </Label>
-        </div>
-
-        <Button 
-          type="submit" 
-          className="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:opacity-90 text-white font-semibold py-3"
-          disabled={!selectedProduct || !precoOriginal || !precoPromocional}
-        >
-          Gerar Encarte
-        </Button>
-      </form>
-    </Card>
+      {selectedProduct && showImageEditor && (
+        <ImageEditor
+          imageUrl={selectedProduct.urlImagem}
+          onImageTransform={setImageTransform}
+          initialTransform={imageTransform}
+        />
+      )}
+    </div>
   );
 };

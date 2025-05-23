@@ -1,0 +1,18 @@
+
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="tagGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1D4ED8;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Tag background -->
+  <path d="M2 8C2 5.79086 3.79086 4 6 4H14L20 10V26C20 28.2091 18.2091 30 16 30H6C3.79086 30 2 28.2091 2 26V8Z" fill="url(#tagGradient)"/>
+  <!-- Fold corner -->
+  <path d="M14 4V10H20L14 4Z" fill="#1E40AF" opacity="0.8"/>
+  <!-- Discount symbol -->
+  <text x="11" y="22" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10" font-weight="bold">%</text>
+  <!-- Sparkle -->
+  <circle cx="25" cy="7" r="2" fill="#FCD34D"/>
+  <path d="M25 5V9M23 7H27" stroke="#F59E0B" stroke-width="1"/>
+</svg>
