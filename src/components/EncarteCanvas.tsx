@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,12 +30,65 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
     if (!ctx) return;
 
     try {
-      // Configurações do canvas - maior resolução para melhor qualidade
-      canvas.width = 800;
-      canvas.height = 1000;
+      // Configurações iniciais do canvas
+      const canvasWidth = 800;
+      let canvasHeight = 1000; // Altura inicial que será ajustada
 
       const template = templates.find(t => t.id === encarteData.template);
       if (!template) return;
+
+      // Função auxiliar para medir altura do texto quebrado
+      const measureTextHeight = (text: string, font: string, maxWidth: number, lineHeight: number = 25) => {
+        ctx.font = font;
+        const words = text.split(' ');
+        let lines = 0;
+        let line = '';
+        
+        for (let n = 0; n < words.length; n++) {
+          const testLine = line + words[n] + ' ';
+          const metrics = ctx.measureText(testLine);
+          const testWidth = metrics.width;
+          
+          if (testWidth > maxWidth && n > 0) {
+            lines++;
+            line = words[n] + ' ';
+          } else {
+            line = testLine;
+          }
+        }
+        lines++; // Última linha
+        
+        return lines * lineHeight;
+      };
+
+      // Calcular altura necessária para todas as informações
+      let calculatedHeight = 120; // Header
+      calculatedHeight += 420; // Área da imagem
+      calculatedHeight += 80; // Nome do produto
+      
+      // Altura do nome do produto (quebrado)
+      const nameHeight = measureTextHeight(encarteData.product.nome, 'bold 32px Arial', canvasWidth - 100, 40);
+      calculatedHeight += nameHeight;
+      
+      calculatedHeight += 80; // Selo de oferta
+      calculatedHeight += 80; // Preço original
+      calculatedHeight += 80; // Preço promocional
+      
+      // Altura das informações adicionais (se existirem)
+      if (encarteData.informacoesAdicionais && encarteData.informacoesAdicionais.trim() !== '') {
+        const infoHeight = measureTextHeight(encarteData.informacoesAdicionais, 'bold 20px Arial', canvasWidth - 120, 25);
+        calculatedHeight += infoHeight + 60; // 60px para padding e background
+      }
+      
+      calculatedHeight += 120; // Footer
+      calculatedHeight += 50; // Margem de segurança
+
+      // Usar a altura calculada
+      canvasHeight = Math.max(canvasHeight, calculatedHeight);
+
+      // Configurar canvas com altura dinâmica
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
 
       // Limpar canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -71,17 +123,16 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
       ctx.font = '18px Arial';
       ctx.fillText('Produtos Ambev - Qualidade Garantida', canvas.width / 2, 75);
 
-      // Área central do produto - maior destaque
+      // Área central do produto
       const productAreaY = headerHeight + 20;
-      const productAreaHeight = 600;
       
-      // Carregar e desenhar imagem do produto (DESTAQUE PRINCIPAL)
+      // Carregar e desenhar imagem do produto
       const img = new Image();
       img.crossOrigin = 'anonymous';
       
       await new Promise<void>((resolve) => {
         img.onload = () => {
-          // Área central para a imagem - muito maior
+          // Área central para a imagem
           const imageAreaWidth = canvas.width - 100;
           const imageAreaHeight = 400;
           const imageAreaX = 50;
@@ -149,7 +200,7 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
         };
         
         img.onerror = () => {
-          // Placeholder moderno se imagem falhar
+          // Placeholder se imagem falhar
           const placeholderX = (canvas.width - 300) / 2;
           const placeholderY = productAreaY + 50;
           
@@ -170,8 +221,8 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
         img.src = encarteData.product.urlImagem;
       });
 
-      // Nome do produto - tipografia moderna
-      const nameY = productAreaY + 460;
+      // Nome do produto - posição dinâmica
+      let currentY = productAreaY + 460;
       ctx.fillStyle = template.id === 'escuro' ? '#FFFFFF' : '#1e293b';
       ctx.font = 'bold 32px Arial';
       ctx.textAlign = 'center';
@@ -180,7 +231,6 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
       const maxWidth = canvas.width - 100;
       const words = encarteData.product.nome.split(' ');
       let line = '';
-      let y = nameY;
       
       for (let n = 0; n < words.length; n++) {
         const testLine = line + words[n] + ' ';
@@ -188,28 +238,26 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
         const testWidth = metrics.width;
         
         if (testWidth > maxWidth && n > 0) {
-          ctx.fillText(line, canvas.width / 2, y);
+          ctx.fillText(line, canvas.width / 2, currentY);
           line = words[n] + ' ';
-          y += 40;
+          currentY += 40;
         } else {
           line = testLine;
         }
       }
-      ctx.fillText(line, canvas.width / 2, y);
+      ctx.fillText(line, canvas.width / 2, currentY);
+      currentY += 50;
 
       // Selo de oferta moderno
-      const seloY = y + 50;
       const seloHeight = 80;
       
-      // Gradiente para o selo
-      const seloGradient = ctx.createLinearGradient(0, seloY, canvas.width, seloY + seloHeight);
+      const seloGradient = ctx.createLinearGradient(0, currentY, canvas.width, currentY + seloHeight);
       seloGradient.addColorStop(0, '#ef4444');
       seloGradient.addColorStop(1, '#dc2626');
       
       ctx.fillStyle = seloGradient;
-      ctx.fillRect(50, seloY, canvas.width - 100, seloHeight);
+      ctx.fillRect(50, currentY, canvas.width - 100, seloHeight);
       
-      // Sombra do selo
       ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
       ctx.shadowBlur = 15;
       ctx.shadowOffsetY = 5;
@@ -217,75 +265,71 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
       ctx.fillStyle = 'white';
       ctx.font = 'bold 36px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('OFERTA IMPERDÍVEL!', canvas.width / 2, seloY + 50);
+      ctx.fillText('OFERTA IMPERDÍVEL!', canvas.width / 2, currentY + 50);
       
       ctx.shadowColor = 'transparent';
+      currentY += seloHeight + 20;
 
-      // Preços com design moderno
-      const precosY = seloY + 120;
-      
+      // Preços
       // Preço original (riscado)
       ctx.fillStyle = template.id === 'escuro' ? '#94a3b8' : '#64748b';
       ctx.font = '28px Arial';
       ctx.textAlign = 'center';
       const precoOrigText = `DE R$ ${encarteData.precoOriginal.toFixed(2).replace('.', ',')}`;
-      ctx.fillText(precoOrigText, canvas.width / 2, precosY);
+      ctx.fillText(precoOrigText, canvas.width / 2, currentY);
       
       // Linha riscando o preço original
       const textWidth = ctx.measureText(precoOrigText).width;
       ctx.strokeStyle = template.id === 'escuro' ? '#94a3b8' : '#64748b';
       ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.moveTo((canvas.width - textWidth) / 2, precosY - 10);
-      ctx.lineTo((canvas.width + textWidth) / 2, precosY - 10);
+      ctx.moveTo((canvas.width - textWidth) / 2, currentY - 10);
+      ctx.lineTo((canvas.width + textWidth) / 2, currentY - 10);
       ctx.stroke();
+      currentY += 60;
 
-      // Preço promocional - destaque especial
-      const precoPromoY = precosY + 80;
-      
-      // Background para preço promocional
+      // Preço promocional
       ctx.fillStyle = template.id === 'escuro' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(34, 197, 94, 0.1)';
-      ctx.fillRect(100, precoPromoY - 50, canvas.width - 200, 80);
+      ctx.fillRect(100, currentY - 40, canvas.width - 200, 80);
       
       ctx.fillStyle = template.id === 'escuro' ? '#ffffff' : '#22c55e';
       ctx.font = 'bold 56px Arial';
-      ctx.fillText(`R$ ${encarteData.precoPromocional.toFixed(2).replace('.', ',')}`, canvas.width / 2, precoPromoY);
+      ctx.fillText(`R$ ${encarteData.precoPromocional.toFixed(2).replace('.', ',')}`, canvas.width / 2, currentY);
+      currentY += 70;
 
-      // Badge de desconto moderno
+      // Badge de desconto
       const desconto = Math.round(((encarteData.precoOriginal - encarteData.precoPromocional) / encarteData.precoOriginal) * 100);
       
       const badgeSize = 120;
       const badgeX = canvas.width - badgeSize - 30;
       const badgeY = productAreaY + 30;
       
-      // Círculo do badge
       ctx.fillStyle = '#dc2626';
       ctx.beginPath();
       ctx.arc(badgeX + badgeSize/2, badgeY + badgeSize/2, badgeSize/2, 0, Math.PI * 2);
       ctx.fill();
       
-      // Sombra do badge
       ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
       ctx.shadowBlur = 10;
       ctx.shadowOffsetY = 5;
       
-      // Texto do desconto
       ctx.fillStyle = 'white';
       ctx.font = 'bold 28px Arial';
       ctx.textAlign = 'center';
       ctx.fillText(`-${desconto}%`, badgeX + badgeSize/2, badgeY + badgeSize/2 + 10);
-      
       ctx.shadowColor = 'transparent';
 
-      // Informações adicionais - CORRIGIDO
-      let currentY = precoPromoY + 70;
-      
+      // Informações adicionais (garantindo que apareçam completamente)
       if (encarteData.informacoesAdicionais && encarteData.informacoesAdicionais.trim() !== '') {
         console.log('Renderizando informações adicionais:', encarteData.informacoesAdicionais);
         
+        // Calcular altura necessária para o background
+        const infoTextHeight = measureTextHeight(encarteData.informacoesAdicionais, 'bold 20px Arial', canvas.width - 120, 25);
+        const bgHeight = infoTextHeight + 30; // 15px padding top/bottom
+        
         // Background sutil para as informações
         ctx.fillStyle = template.id === 'escuro' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
-        ctx.fillRect(30, currentY - 15, canvas.width - 60, 60);
+        ctx.fillRect(30, currentY - 15, canvas.width - 60, bgHeight);
         
         ctx.fillStyle = template.id === 'escuro' ? '#E5E7EB' : '#374151';
         ctx.font = 'bold 20px Arial';
@@ -294,52 +338,52 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
         // Quebrar texto das informações adicionais
         const infoWords = encarteData.informacoesAdicionais.split(' ');
         let infoLine = '';
-        let infoY = currentY + 10;
         
         for (let n = 0; n < infoWords.length; n++) {
           const testLine = infoLine + infoWords[n] + ' ';
           const metrics = ctx.measureText(testLine);
           const testWidth = metrics.width;
           
-          if (testWidth > maxWidth - 60 && n > 0) {
-            ctx.fillText(infoLine.trim(), canvas.width / 2, infoY);
+          if (testWidth > canvas.width - 120 && n > 0) {
+            ctx.fillText(infoLine.trim(), canvas.width / 2, currentY);
             infoLine = infoWords[n] + ' ';
-            infoY += 25;
+            currentY += 25;
           } else {
             infoLine = testLine;
           }
         }
         
         if (infoLine.trim()) {
-          ctx.fillText(infoLine.trim(), canvas.width / 2, infoY);
+          ctx.fillText(infoLine.trim(), canvas.width / 2, currentY);
+          currentY += 25;
         }
         
-        currentY = infoY + 30;
+        currentY += 30; // Espaço após as informações
       }
 
-      // Footer moderno - ajustado para aparecer após as informações
-      const footerY = Math.max(currentY + 20, canvas.height - 120);
+      // Footer - sempre no final
+      currentY += 20; // Margem antes do footer
       
       if (template.id === 'escuro') {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
       } else {
         ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
       }
-      ctx.fillRect(0, footerY, canvas.width, 120);
+      ctx.fillRect(0, currentY, canvas.width, 120);
       
       ctx.fillStyle = template.id === 'escuro' ? '#FFFFFF' : template.colors.primary;
       ctx.font = 'bold 20px Arial';
       ctx.textAlign = 'center';
       
       if (encarteData.validade) {
-        ctx.fillText(`Válido até ${encarteData.validade}`, canvas.width / 2, footerY + 35);
+        ctx.fillText(`Válido até ${encarteData.validade}`, canvas.width / 2, currentY + 35);
       } else {
-        ctx.fillText('Válido enquanto durarem os estoques', canvas.width / 2, footerY + 35);
+        ctx.fillText('Válido enquanto durarem os estoques', canvas.width / 2, currentY + 35);
       }
       
       ctx.font = '16px Arial';
-      ctx.fillText('Discar Distribuidora - Parceira oficial Ambev', canvas.width / 2, footerY + 65);
-      ctx.fillText('www.discardistribuidora.com.br', canvas.width / 2, footerY + 90);
+      ctx.fillText('Discar Distribuidora - Parceira oficial Ambev', canvas.width / 2, currentY + 65);
+      ctx.fillText('www.discardistribuidora.com.br', canvas.width / 2, currentY + 90);
 
     } catch (error) {
       console.error('Erro ao gerar encarte:', error);
