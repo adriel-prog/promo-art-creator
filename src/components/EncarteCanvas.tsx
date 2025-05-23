@@ -277,35 +277,49 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
       
       ctx.shadowColor = 'transparent';
 
-      // Informações adicionais (se existirem)
+      // Informações adicionais - CORRIGIDO
+      let currentY = precoPromoY + 70;
+      
       if (encarteData.informacoesAdicionais && encarteData.informacoesAdicionais.trim() !== '') {
-        const infoY = precoPromoY + 60;
-        ctx.fillStyle = template.id === 'escuro' ? '#D1D5DB' : '#4B5563';
-        ctx.font = '18px Arial';
+        console.log('Renderizando informações adicionais:', encarteData.informacoesAdicionais);
+        
+        // Background sutil para as informações
+        ctx.fillStyle = template.id === 'escuro' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+        ctx.fillRect(30, currentY - 15, canvas.width - 60, 60);
+        
+        ctx.fillStyle = template.id === 'escuro' ? '#E5E7EB' : '#374151';
+        ctx.font = 'bold 20px Arial';
         ctx.textAlign = 'center';
         
+        // Quebrar texto das informações adicionais
         const infoWords = encarteData.informacoesAdicionais.split(' ');
         let infoLine = '';
-        let infoLineY = infoY;
+        let infoY = currentY + 10;
         
         for (let n = 0; n < infoWords.length; n++) {
           const testLine = infoLine + infoWords[n] + ' ';
           const metrics = ctx.measureText(testLine);
           const testWidth = metrics.width;
           
-          if (testWidth > maxWidth - 100 && n > 0) {
-            ctx.fillText(infoLine, canvas.width / 2, infoLineY);
+          if (testWidth > maxWidth - 60 && n > 0) {
+            ctx.fillText(infoLine.trim(), canvas.width / 2, infoY);
             infoLine = infoWords[n] + ' ';
-            infoLineY += 25;
+            infoY += 25;
           } else {
             infoLine = testLine;
           }
         }
-        ctx.fillText(infoLine, canvas.width / 2, infoLineY);
+        
+        if (infoLine.trim()) {
+          ctx.fillText(infoLine.trim(), canvas.width / 2, infoY);
+        }
+        
+        currentY = infoY + 30;
       }
 
-      // Footer moderno
-      const footerY = canvas.height - 120;
+      // Footer moderno - ajustado para aparecer após as informações
+      const footerY = Math.max(currentY + 20, canvas.height - 120);
+      
       if (template.id === 'escuro') {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
       } else {
