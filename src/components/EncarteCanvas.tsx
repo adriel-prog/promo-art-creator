@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -277,7 +278,7 @@ export const EncarteCanvas = ({ encarteData }: EncarteCanvasProps) => {
       ctx.shadowColor = 'transparent';
 
       // Informações adicionais (se existirem)
-      if (encarteData.informacoesAdicionais) {
+      if (encarteData.informacoesAdicionais && encarteData.informacoesAdicionais.trim() !== '') {
         const infoY = precoPromoY + 60;
         ctx.fillStyle = template.id === 'escuro' ? '#D1D5DB' : '#4B5563';
         ctx.font = '18px Arial';
